@@ -1,5 +1,5 @@
-const Manager = require("../lib/Manager");
-const Employee = require("../lib/Employee");
+import { Manager }from "../lib/Manager.js";
+import { Employee } from "../lib/Employee.js";
 
 test("Can set office number via constructor argument", () => {
   const testValue = 100;

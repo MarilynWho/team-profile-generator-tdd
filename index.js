@@ -6,29 +6,22 @@ import path from "path";
 import fs from "fs";
 import * as url from "url";
 import Rx from "rx";
-import { Observable } from "rxjs";
-let emitter;
+import { generate, Observable } from "rxjs";
+import render from "./src/page-template.js";
 
+let emitter;
+let allAnswers = [];
+let objectType;
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+const OUTPUT_DIR = path.resolve(__dirname, "output");
+const outputPath = path.join(OUTPUT_DIR, "team.html");
 const prompts = new Observable(function (observer) {
   emitter = observer;
   // need to start with at least one question here
   addQuestions(questions["Manager"]);
+  objectType = "Manager";
 });
-
-function addQuestions(array) {
-  array.forEach((question) => {
-    emitter.next(question);
-  });
-  emitter.next(questions["AddTeamMember"][0]);
-}
-
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
-const OUTPUT_DIR = path.resolve(__dirname, "output");
-const outputPath = path.join(OUTPUT_DIR, "team.html");
-
-import render from "./src/page-template.js";
-
-const collectAnswers = [];
+let allObjects = [];
 
 const questions = {
   Manager: [
@@ -110,12 +103,18 @@ const questions = {
 inquirer.prompt(prompts).ui.process.subscribe(
   ({ answer }) => {
     console.log(answer);
-    if (answer !== "Finish building the team") {
+    if (answer == "Finish building the team") {
+      generateObject(allAnswers);
+      renderTheHTMLpage();
+      emitter.complete();
+    } else {
+      allAnswers.push(answer);
       if (answer == "Engineer" || answer == "Intern") {
+        generateObject(allAnswers);
+        allAnswers = [];
+        objectType = answer;
         addQuestions(questions[answer]);
       }
-    } else {
-      emitter.complete();
     }
   },
   (err) => {
@@ -126,6 +125,29 @@ inquirer.prompt(prompts).ui.process.subscribe(
   }
 );
 
-function start() {}
+function addQuestions(array) {
+  array.forEach((question) => {
+    emitter.next(question);
+  });
+  emitter.next(questions["AddTeamMember"][0]);
+}
 
-start();
+function generateObject(array) {
+  if (objectType == "Manager") {
+    allObjects.push(new Manager(...array));
+  } else if (objectType == "Intern") {
+    allObjects.push(new Intern(...array));
+  } else { 
+    allObjects.push(new Engineer(...array));
+  }
+  console.log(allObjects);
+};
+
+function renderTheHTMLpage() {
+  const finalHTML = render(allObjects);
+  console.log(finalHTML);
+  fs.writeFile(outputPath, (err, finalHTML => {
+    err ? console.log(err) || console.log("Generating new file!")
+  }));
+};
+

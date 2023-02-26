@@ -5,6 +5,22 @@ import inquirer from "inquirer";
 import path from "path";
 import fs from "fs";
 import * as url from "url";
+import Rx from "rx";
+import { Observable } from "rxjs";
+let emitter;
+
+const prompts = new Observable(function (observer) {
+  emitter = observer;
+  // need to start with at least one question here
+  addQuestions(questions["Manager"]);
+});
+
+function addQuestions(array) {
+  array.forEach((question) => {
+    emitter.next(question);
+  });
+  emitter.next(questions["AddTeamMember"][0]);
+}
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 const OUTPUT_DIR = path.resolve(__dirname, "output");
@@ -12,16 +28,7 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 import render from "./src/page-template.js";
 
-let flag = true;
-
 const collectAnswers = [];
-
-// const engineer1 = new Engineer("Vanya", "1", );
-function start() {
-    inquirer.prompt(questions["Manager"]).then(function (answers) {
-      collectAnswers.push(answers);
-    });
-}
 
 const questions = {
   Manager: [
@@ -99,5 +106,26 @@ const questions = {
     },
   ],
 };
+
+inquirer.prompt(prompts).ui.process.subscribe(
+  ({ answer }) => {
+    console.log(answer);
+    if (answer !== "Finish building the team") {
+      if (answer == "Engineer" || answer == "Intern") {
+        addQuestions(questions[answer]);
+      }
+    } else {
+      emitter.complete();
+    }
+  },
+  (err) => {
+    console.warn(err);
+  },
+  () => {
+    console.log("Interactive session is complete. Good bye! 👋\n");
+  }
+);
+
+function start() {}
 
 start();

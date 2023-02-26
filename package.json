@@ -6,7 +6,7 @@
   "directories": {
     "lib": "lib"
   },
-  "type" : "module",
+  "type": "module",
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
@@ -23,9 +23,10 @@
   "homepage": "https://github.com/MarilynWho/team-profile-generator-tdd#readme",
   "dependencies": {
     "inquirer": "^6.5.0",
-    "jest": "^29.4.3"
+    "jest": "^29.4.3",
+    "rx": "^4.1.0"
   },
   "jest": {
     "transform": {}
-  } 
+  }
 }

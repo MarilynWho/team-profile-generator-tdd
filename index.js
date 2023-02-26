@@ -5,7 +5,6 @@ import inquirer from "inquirer";
 import path from "path";
 import fs from "fs";
 import * as url from "url";
-import Rx from "rx";
 import { generate, Observable } from "rxjs";
 import render from "./src/page-template.js";
 
@@ -102,7 +101,6 @@ const questions = {
 
 inquirer.prompt(prompts).ui.process.subscribe(
   ({ answer }) => {
-    console.log(answer);
     if (answer == "Finish building the team") {
       generateObject(allAnswers);
       renderTheHTMLpage();
@@ -137,17 +135,26 @@ function generateObject(array) {
     allObjects.push(new Manager(...array));
   } else if (objectType == "Intern") {
     allObjects.push(new Intern(...array));
-  } else { 
+  } else {
     allObjects.push(new Engineer(...array));
   }
-  console.log(allObjects);
-};
+}
 
 function renderTheHTMLpage() {
   const finalHTML = render(allObjects);
   console.log(finalHTML);
-  fs.writeFile(outputPath, (err, finalHTML => {
-    err ? console.log(err) || console.log("Generating new file!")
-  }));
-};
+  writeFile(finalHTML);
+}
 
+function writeFile(contents) {
+  if (!fs.existsSync(OUTPUT_DIR)) {
+    fs.mkdir(OUTPUT_DIR, function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+  }
+  fs.writeFile(outputPath, contents, (err) => {
+    err ? console.log(err) : console.log("Generating new file!");
+  });
+}

@@ -10,7 +10,7 @@ Example of work with program:
 
   > ![Screenshot](./assets/command-line.png)
 
-After you are finished generated file will look something like this: 
+After you are finished entering data, HTML file will be genereted. It will look something like this: 
 
   > ![Screenshot](./assets/html-page.png)
 
